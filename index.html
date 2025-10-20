@@ -837,7 +837,10 @@
             function initializePage(pageId) {
                 if (pageId === 'library') renderPosts(posts, document.querySelector('.library'));
                 if (pageId === 'myposts') renderMyPosts();
-                if (pageId === 'search') document.getElementById('search-input').addEventListener('input', handleSearch);
+                if (pageId === 'search') {
+                    document.getElementById('search-input').addEventListener('input', handleSearch);
+                    handleSearch(); // Render all posts initially
+                }
                 if (pageId === 'contributions') renderLeaderboard();
                 if (pageId === 'write') initializeWritePage();
             }
@@ -875,7 +878,9 @@
                 renderPosts(myPosts, document.getElementById('my-posts-results'), { showDeleteButton: true, emptyMessage: "You haven't published any creations yet." });
             }
             function handleSearch() {
-                const query = document.getElementById('search-input').value.toLowerCase().trim();
+                const searchInput = document.getElementById('search-input');
+                if (!searchInput) return;
+                const query = searchInput.value.toLowerCase().trim();
                 const filteredPosts = posts.filter(post => {
                     const textContent = (new DOMParser().parseFromString(post.content, "text/html")).documentElement.textContent;
                     return post.title.toLowerCase().includes(query) || post.author.toLowerCase().includes(query) || textContent.toLowerCase().includes(query) || post.type.toLowerCase().includes(query);
@@ -1054,3 +1059,4 @@
 
 </body>
 </html>
+
