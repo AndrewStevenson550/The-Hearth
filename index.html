@@ -187,6 +187,9 @@
             <p id="upload-prompt" class="text-sm mt-3 hidden" style="color: var(--text-secondary);">Please log in to upload your art.</p>
         </div>
         
+        <!-- App-wide Error Message -->
+        <div id="app-error" class="mb-6 p-4 rounded-lg bg-red-100 text-red-700 text-center hidden"></div>
+
         <!-- Filters and Tag Cloud Section -->
         <div class="mb-12 fade-in-up" style="animation-delay: 0.2s;">
             <div id="category-filters" class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6">
@@ -356,7 +359,7 @@
         const CLOUDINARY_UPLOAD_PRESET = "Hearth";
         // --- END OF CLOUDINARY INFO ---
 
-        const appId = 'hearth-gallery-shared';
+        const appId = 'hearth-1fe4c';
 
         // --- Firebase Initialization ---
         const app = initializeApp(firebaseConfig);
@@ -386,6 +389,7 @@
         const searchBar = document.getElementById('search-bar');
         const startUploadBtn = document.getElementById('start-upload-btn');
         const uploadPrompt = document.getElementById('upload-prompt');
+        const appError = document.getElementById('app-error');
         
         // Auth UI
         const loggedInView = document.getElementById('logged-in-view');
@@ -602,11 +606,16 @@
         function listenForArtworks() {
             const q = query(collection(db, `artifacts/${appId}/public/data/artworks`));
             onSnapshot(q, (snapshot) => {
+                appError.classList.add('hidden'); // Hide error on success
                 const firestoreArtworks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allArtworks = [...examplePoems, ...firestoreArtworks];
                 renderArtworks();
             }, (error) => {
                 console.error("Error fetching artworks from Firebase: ", error);
+                appError.innerHTML = `Could not load the gallery. This is a Firebase permissions error. <br> <strong>Please go to your Firestore Database -> Rules tab and change the rule to <code class='bg-red-200 p-1 rounded'>allow read, write: if true;</code></strong>`;
+                appError.classList.remove('hidden');
+
+                // Still show example poems so the page isn't totally blank
                 allArtworks = [...examplePoems];
                 renderArtworks();
             });
@@ -874,5 +883,4 @@
     </script>
 </body>
 </html>
-
 
