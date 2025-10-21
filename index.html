@@ -3,1060 +3,833 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hearth & Verse</title>
+    <title>The Hearth Gallery</title>
     
-    <!-- Google Fonts for the cozy, literary feel -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
-    <!-- Icon library for search icon and writing tools -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom Styles and Animations -->
     <style>
-        /* --- 🎨 Color Palette & Global Styles --- */
         :root {
-            --bg-color: #F5F0E8; /* Warm Parchment */
-            --text-color: #3D352E; /* Charcoal Grey */
-            --accent-primary: #B95C3B; /* Burnt Sienna */
-            --accent-secondary: #D4A259; /* Muted Gold */
-            --card-bg: #FFFFFF;
-            --danger-color: #c94a4a;
-            --poetry-color: #6a9c89;
-            --art-color: #a37b4c;
-            --music-color: #6c7a8f;
+            --bg-main: #F4E9D8; /* A warmer, cozier beige */
+            --bg-secondary: #FFFFFF;
+            --text-main: #5C4033; /* Dark Brown */
+            --text-secondary: #8A6652; /* Lighter brown */
+            --primary-accent: #E57A44; /* Burnt Sienna/Orange */
+            --primary-accent-dark: #D46A34;
+            --border-color: #DCD0C0; /* Warm gray/beige */
+            --shadow-sm: rgba(92, 64, 51, 0.05);
+            --shadow-md: rgba(92, 64, 51, 0.1);
         }
 
-        /* Smooth scroll for a calmer experience */
-        html {
-            scroll-behavior: smooth;
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Cozy Button Style */
+        .btn-cozy {
+            @apply px-6 py-2.5 rounded-full text-white font-semibold transition-all duration-300 ease-in-out shadow-md;
+            background-image: linear-gradient(to right, var(--primary-accent), #ff9a63);
+            background-size: 200% auto;
+        }
+
+        .btn-cozy:hover {
+            background-position: right center;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px var(--shadow-md);
         }
         
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Merriweather', serif;
-            margin: 0;
-            padding: 0 20px;
-            line-height: 1.7;
-            overflow-x: hidden; /* Prevents horizontal scrollbar */
-            transition: background-color 0.5s ease;
+        /* Smooth animations */
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
         }
-
-        /* Page wrapper for smooth transitions */
-        .page {
-            display: none; /* Hide all pages by default */
-            animation: fadeInPage 0.7s ease-in-out;
-        }
-
-        .page.active {
-            display: block; /* Show the active page */
-        }
-
-        @keyframes fadeInPage {
-            from { opacity: 0; transform: translateY(10px); }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* Modal transitions */
+        .modal-enter { animation: modal-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        .modal-leave { animation: modal-out 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
 
-        /* --- ✨ Header & Navigation --- */
-        .header {
-            text-align: center;
-            padding: 40px 20px 20px;
+        @keyframes modal-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes modal-out {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.95); }
         }
 
-        .header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 3.5rem;
-            color: var(--text-color);
-            margin: 0;
-            cursor: pointer;
+        /* Shimmering placeholder */
+        .placeholder-card {
+            background: linear-gradient(-90deg, #f5efe6 0%, #ffffff 50%, #f5efe6 100%);
+            background-size: 400% 400%;
+            animation: shimmer 1.2s ease-in-out infinite;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            color: #6a6056;
-            margin-top: 10px;
+        @keyframes shimmer {
+            0% { background-position: 0% 0%; }
+            100% { background-position: -135% 0%; }
         }
 
-        .navigation {
+        /* Masonry Grid for Gallery */
+        #gallery-grid {
+            column-gap: 1.5rem;
+        }
+        
+        @media (min-width: 640px) { #gallery-grid { column-count: 2; } }
+        @media (min-width: 1024px) { #gallery-grid { column-count: 3; } }
+        @media (min-width: 1280px) { #gallery-grid { column-count: 4; } }
+
+        .gallery-item {
+            @apply mb-6 break-inside-avoid;
+        }
+
+        .gallery-card {
+            @apply bg-white rounded-lg shadow-sm transition-all duration-300 ease-in-out overflow-hidden;
+        }
+        .gallery-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px var(--shadow-md);
+        }
+        
+        /* Rich Text Editor */
+        .rich-text-editor {
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background-color: var(--bg-secondary);
+        }
+        .editor-toolbar {
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.5rem;
             display: flex;
-            justify-content: center;
             flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 25px;
-            border-bottom: 1px solid #e0d9cf;
-            padding-bottom: 15px;
+            gap: 0.5rem;
         }
-
-        .nav-link {
-            font-family: 'Merriweather', serif;
-            font-weight: 700;
-            color: #8c7f73;
-            text-decoration: none;
-            font-size: 1rem;
-            position: relative;
-            padding: 5px 0;
-            transition: color 0.3s ease;
-            cursor: pointer;
-        }
-
-        .nav-link:after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -2px;
-            left: 50%;
-            background-color: var(--accent-primary);
-            transition: all 0.4s ease-out;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            color: var(--accent-primary);
-        }
-
-        .nav-link:hover:after, .nav-link.active:after {
-            width: 100%;
-            left: 0;
-        }
-        
-        /* --- 🏆 Contributions Page --- */
-        .contributions-page {
-            max-width: 800px;
-            margin: 40px auto;
-        }
-        .contributions-page h2 {
-            text-align: center;
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem;
-        }
-        .leaderboard {
-            list-style: none;
-            padding: 0;
-            margin-top: 40px;
-        }
-        .leaderboard li {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            font-size: 1.2rem;
-        }
-        .leaderboard .rank {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            color: var(--accent-secondary);
-            width: 50px;
-            text-align: center;
-        }
-        .leaderboard .author-name {
-            font-weight: bold;
-            flex-grow: 1;
-        }
-        .leaderboard .post-count {
-            font-size: 1rem;
-            color: #8c7f73;
-        }
-
-        /* --- 📚 The Library: Poem Grid --- */
-        .library {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 0;
-        }
-
-        /* --- 🍂 Poem Card Styling & Animation --- */
-        .poem-card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid transparent;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            
-            opacity: 0;
-            transform: translateY(20px);
-            transition: transform 0.4s ease-in-out, 
-                        box-shadow 0.4s ease-in-out, 
-                        border-left-color 0.4s ease-in-out,
-                        opacity 0.6s ease-out;
-        }
-        
-        .poem-card.fade-in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .poem-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 25px rgba(185, 92, 59, 0.15);
-            border-left-color: var(--accent-secondary);
-        }
-        
-        .poem-card-content {
-            flex-grow: 1;
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-        }
-
-        .poem-card h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.6rem;
-            margin: 0 0 5px 0;
-            flex-grow: 1;
-        }
-        
-        .label-container {
-            display: flex;
-            gap: 5px;
-            margin-left: 10px;
-        }
-        
-        .category-label, .mature-label {
-            display: inline-block;
-            color: white;
-            font-size: 0.7rem;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .category-label.poetry { background-color: var(--poetry-color); }
-        .category-label.art { background-color: var(--art-color); }
-        .category-label.music { background-color: var(--music-color); }
-        .mature-label { background-color: var(--danger-color); }
-
-
-        .poem-card .author {
-            font-family: 'Merriweather', serif;
-            font-style: italic;
-            color: #777;
-            font-size: 1rem;
-            margin-bottom: 15px;
-        }
-
-        .poem-card p {
-            margin: 0;
-            font-size: 0.95rem;
-        }
-        
-        .card-actions {
-            margin-top: 20px;
-            text-align: right;
-        }
-        
-        .delete-btn {
+        .toolbar-btn {
             background: none;
             border: none;
-            color: #aaa;
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: color 0.2s ease;
-        }
-        .delete-btn:hover {
-            color: var(--danger-color);
-        }
-        
-        /* --- 📖 Reading Nook (Single Poem View) --- */
-        .reading-nook-container {
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-        .reading-nook-container .card-header {
-            display: block;
-            text-align: center;
-        }
-        .reading-nook-container h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            text-align: center;
-        }
-        .reading-nook-container h3 {
-            font-family: 'Merriweather', serif;
-            font-style: italic;
-            text-align: center;
-            color: #777;
-            font-size: 1.2rem;
-            margin-top: -15px;
-            margin-bottom: 30px;
-        }
-        .reading-nook-container .post-content {
-            font-size: 1.2rem;
-            line-height: 2;
-            margin-top: 40px;
-        }
-        .post-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .music-link-container, .pdf-list-container {
-            margin-bottom: 20px;
-        }
-        .pdf-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #fdfaf6;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        .pdf-item span {
-            font-weight: bold;
-        }
-        .pdf-item-actions a {
-            margin-left: 15px;
-            color: var(--accent-primary);
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .pdf-item-actions a:hover {
-            text-decoration: underline;
-        }
-        .music-link {
-            display: block;
-            background-color: var(--accent-primary);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            margin-bottom: 10px;
-        }
-        .music-link:hover {
-            background-color: #a34e2f;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(185, 92, 59, 0.3);
-        }
-
-        .back-button {
-            display: inline-block;
-            margin-top: 40px;
-            color: var(--accent-primary);
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .back-button:hover {
-            text-decoration: underline;
-        }
-
-
-        /* --- ✍️ Writing Page --- */
-        .writing-nook {
-            max-width: 800px;
-            margin: 40px auto;
-            text-align: center;
-        }
-
-        .writing-nook h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-        }
-        
-        .writing-nook .prompt {
-            color: #8c7f73;
-            font-style: italic;
-            margin-bottom: 30px;
-        }
-        
-        .category-selector {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-        .category-selector label {
-            padding: 10px 20px;
-            border: 2px solid #e0d9cf;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .category-selector input {
-            display: none;
-        }
-        .category-selector input:checked + label {
-            background-color: var(--accent-primary);
-            color: white;
-            border-color: var(--accent-primary);
-        }
-
-        .writer-field {
-            display: none;
-            text-align: left;
-            margin-bottom: 20px;
-        }
-        .writer-field.active {
-            display: block;
-        }
-
-        .upload-options {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .file-upload-btn {
-            flex: 1;
-            padding: 12px 20px;
-            background: var(--card-bg);
-            border: 2px dashed #e0d9cf;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            font-weight: bold;
-            color: var(--text-color);
-            transition: all 0.3s ease;
-        }
-        .file-upload-btn:hover {
-            border-color: var(--accent-secondary);
-            background-color: #fdfaf6;
-        }
-        .file-upload-btn input[type="file"] {
-            display: none;
-        }
-
-        #art-upload-preview-container {
-            text-align: center;
-        }
-        #art-upload-preview {
-            max-width: 200px;
-            max-height: 200px;
-            margin-top: 15px;
-            border-radius: 4px;
-            display: none;
-        }
-        #pdf-file-list {
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: #6a6056;
-        }
-        #pdf-file-list div {
-            padding: 5px;
-            background-color: #fdfaf6;
-            border-radius: 4px;
-            margin-bottom: 5px;
-        }
-
-
-        .writing-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #fdfaf6;
-            border: 1px solid #e0d9cf;
-            border-bottom: none;
-            border-radius: 8px 8px 0 0;
-        }
-        .tool-btn {
-            background: none;
-            border: 1px solid transparent;
-            font-size: 1rem;
-            color: var(--text-color);
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 4px;
-            width: 35px;
-            height: 35px;
-            transition: background-color 0.2s ease, color 0.2s ease;
-            position: relative;
+            padding: 0.5rem;
+            border-radius: 9999px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .tool-btn:hover {
-            background-color: #e0d9cf;
+        .toolbar-btn:hover, .toolbar-btn.is-active {
+            background-color: #f5efe6;
         }
-        .tool-btn.active {
-            background-color: #d1c9be;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .color-picker-wrapper {
-            --selected-color: var(--text-color); /* Default color for the indicator */
-        }
-        .color-picker-wrapper::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            left: 6px;
-            right: 6px;
-            height: 4px;
-            background-color: var(--selected-color); /* Use the CSS variable */
-            border-radius: 2px;
-            transition: background-color 0.2s ease;
-        }
-        #color-picker {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        .poem-editor {
-            width: 100%;
-            min-height: 40vh;
-            border: 1px solid #e0d9cf;
-            border-radius: 0 0 8px 8px; /* Match toolbar */
-            padding: 20px;
-            font-family: 'Merriweather', serif;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            background-color: #fdfaf6;
-            box-shadow: inset 0 1px 4px rgba(0,0,0,0.04);
-            margin-top: -1px; /* Overlap border */
-            text-align: left;
-        }
-        
-        .poem-editor:empty:before {
-            content: "Your description or verse...";
-            color: #aaa;
-            pointer-events: none;
-        }
-
-        .poem-editor:focus {
+        #editor-content {
+            padding: 1rem;
+            min-height: 200px;
             outline: none;
-            border-color: var(--accent-secondary);
-            box-shadow: 0 0 15px rgba(212, 162, 89, 0.3);
         }
-        
-        .writing-inputs {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .writing-inputs input {
-            flex: 1;
-            padding: 12px;
-            font-family: 'Merriweather', serif;
-            font-size: 1rem;
-            border: 1px solid #e0d9cf;
-            border-radius: 4px;
-        }
-
-        /* --- 🔍 Search & My Posts Page --- */
-        .search-page, .my-posts-page {
-            max-width: 1200px;
-            margin: 40px auto;
-        }
-
-        .search-container {
-            position: relative;
-            width: 60%;
-            max-width: 500px;
-            margin: 0 auto 50px auto;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 15px 50px 15px 25px;
-            border-radius: 50px;
-            border: 2px solid #e0d9cf;
-            font-size: 1.1rem;
-            font-family: 'Merriweather', serif;
-            color: var(--text-color);
-            background-color: var(--card-bg);
-            transition: all 0.4s ease;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--accent-secondary);
-            box-shadow: 0 0 20px rgba(212, 162, 89, 0.4);
-            transform: scale(1.02);
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 25px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.2rem;
-            color: #aaa;
-            transition: color 0.3s ease;
-        }
-        
-        .search-input:focus + .search-icon {
-            color: var(--accent-primary);
-        }
-        
-        #search-results, #my-posts-results {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-        }
-        
-        .no-results {
-            text-align: center;
-            grid-column: 1 / -1;
-            font-size: 1.2rem;
-            color: #8c7f73;
-        }
-
-
-        /* --- ✍️ Call to Action Button --- */
-        .cta-button {
-            background-color: var(--accent-primary);
-            color: var(--bg-color);
-            font-family: 'Merriweather', serif;
-            font-weight: 700;
-            font-size: 1rem;
-            text-decoration: none;
-            padding: 15px 30px;
-            border: none;
-            cursor: pointer;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(185, 92, 59, 0.2);
-            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-            display: inline-block; /* for margin */
-            margin-top: 20px;
-        }
-
-        .cta-button:hover {
-            background-color: #a34e2f;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(185, 92, 59, 0.3);
-        }
-        
-        /* --- Modal Styles --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(61, 53, 46, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease, visibility 0s 0.4s;
-        }
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.4s ease;
-        }
-        .modal-content {
-            background: var(--bg-color);
-            padding: 40px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transform: scale(0.9);
-            transition: transform 0.4s ease;
-        }
-        .modal-overlay.visible .modal-content {
-            transform: scale(1);
-        }
-        .modal-content h2 {
-            font-family: 'Playfair Display', serif;
-        }
-        .modal-content input {
-            display: block;
-            width: 80%;
-            margin: 20px auto;
-            padding: 12px;
-            font-family: 'Merriweather', serif;
-            font-size: 1rem;
-        }
-        
-        /* --- 🦶 Footer --- */
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: #8c7f73;
-            font-size: 0.9rem;
-        }
-
     </style>
 </head>
-<body>
 
-    <header class="header">
-        <h1 id="home-link">Hearth & Verse</h1>
-        <p>Your quiet corner for words and warmth.</p>
-        <nav class="navigation">
-            <a class="nav-link" data-page="library">Library</a>
-            <a class="nav-link" data-page="write">Write</a>
-            <a class="nav-link" data-page="search">Search</a>
-            <a class="nav-link" data-page="contributions">Contributions</a>
-            <a class="nav-link" data-page="myposts">My Posts</a>
-        </nav>
-    </header>
+<body class="antialiased">
 
-    <main id="library" class="page active"></main>
-    <section id="write" class="page"></section>
-    <section id="search" class="page"></section>
-    <section id="myposts" class="page"></section>
-    <section id="reading-nook" class="page"></section>
-    <section id="contributions" class="page"></section>
-    
-    <!-- Modal for setting author name -->
-    <div id="author-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2>Welcome, Creator!</h2>
-            <p>Please enter your pen name to continue.</p>
-            <input type="text" id="author-name-input" placeholder="Your Pen Name">
-            <button id="save-author-btn" class="cta-button">Continue</button>
+    <!-- Auth Header -->
+    <div id="auth-container" class="absolute top-4 right-4 z-20">
+        <!-- Logged out state -->
+        <div id="logged-out-view">
+            <button id="login-btn" class="px-4 py-2 text-sm font-semibold rounded-full hover:bg-white transition">Login</button>
+            <button id="signup-btn" class="px-4 py-2 text-sm font-semibold rounded-full btn-cozy ml-2">Sign Up</button>
+        </div>
+        <!-- Logged in state -->
+        <div id="logged-in-view" class="hidden items-center">
+            <span id="welcome-message" class="mr-4 font-semibold"></span>
+            <button id="logout-btn" class="px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-gray-100 transition">Logout</button>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2025 Hearth & Verse. A quiet place on the web.</p>
-    </footer>
+    <!-- Main Container -->
+    <div id="app" class="container mx-auto px-4 py-8 pt-20">
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // --- DATA & STATE MANAGEMENT ---
-            let posts = [];
-            let currentUser = null;
-            const PROFANITY_LIST = ['examplebadword', 'testprofanity'];
-            let uploadedArtData = null;
-            let uploadedMusicPDFs = [];
-            const navLinks = document.querySelectorAll('.nav-link');
+        <!-- Header -->
+        <header class="text-center mb-12 fade-in-up">
+            <h1 class="text-6xl font-bold mb-2" style="color: var(--text-main);">The Hearth Gallery</h1>
+            <p class="text-xl" style="color: var(--text-secondary);">A cozy space for creators to share their spark.</p>
+        </header>
 
-            // --- TEMPLATES ---
-            const TEMPLATES = {
-                library: `<div class="library"></div>`,
-                write: `<div class="writing-nook"><h2>The Scriptorium</h2><p class="prompt">Share your creativity with the world.</p><div class="category-selector"><input type="radio" id="cat-poetry" name="category" value="poetry" checked><label for="cat-poetry">Poetry</label><input type="radio" id="cat-art" name="category" value="art"><label for="cat-art">Art</label><input type="radio" id="cat-music" name="category" value="music"><label for="cat-music">Music</label></div><div id="art-writer" class="writer-field"><p style="text-align:left; font-size: 0.9rem; color: #8c7f73;">Add your artwork and an optional description below:</p><div class="upload-options"><label class="file-upload-btn" for="art-upload-device"><i class="fas fa-upload"></i> Upload from Device</label><input type="file" id="art-upload-device" accept="image/*"><button class="file-upload-btn" id="art-camera-button"><i class="fas fa-camera"></i> Use Camera</button></div><div id="art-upload-preview-container"><img id="art-upload-preview" src="" alt="Image preview"></div></div><div id="music-writer" class="writer-field"><p style="text-align:left; font-size: 0.9rem; color: #8c7f73;">Add your music files and an optional description below:</p><input type="text" id="music-link-input" class="writing-inputs" style="width: 100%; box-sizing: border-box; margin-bottom: 15px;" placeholder="Or, link to your sheet music (e.g., Google Drive, Dropbox)..."><label class="file-upload-btn" for="music-pdf-upload"><i class="fas fa-file-pdf"></i> Upload PDFs (up to 10)</label><input type="file" id="music-pdf-upload" accept=".pdf" multiple><div id="pdf-file-list"></div></div><div id="poetry-writer" class="writer-field active"><p style="text-align:left; font-size: 0.9rem; color: #8c7f73;">Write your verse and a description below:</p><div class="writing-toolbar"><button class="tool-btn" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button><button class="tool-btn" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button><button class="tool-btn" data-command="underline" title="Underline"><i class="fas fa-underline"></i></button><button class="tool-btn" data-command="strikeThrough" title="Strikethrough"><i class="fas fa-strikethrough"></i></button><div class="color-picker-wrapper tool-btn" title="Text Color"><i class="fas fa-palette"></i><input type="color" id="color-picker"></div></div><div id="poem-editor" class="poem-editor" contenteditable="true"></div></div><div class="writing-inputs"><input type="text" id="post-title-input" placeholder="Title of your piece"><input type="text" id="post-author-input" placeholder="Your name" readonly></div><button id="publish-btn" class="cta-button">Publish Your Creation</button></div>`,
-                search: `<div class="search-page"><div class="search-container"><input type="text" id="search-input" class="search-input" placeholder="Search for poems, art, music, or authors..."><i class="fas fa-search search-icon"></i></div><div id="search-results"></div></div>`,
-                myposts: `<div class="my-posts-page"><h2 style="text-align: center; font-family: 'Playfair Display', serif; font-size: 2.5rem;">My Creations</h2><div id="my-posts-results"></div></div>`,
-                readingNook: `<div class="reading-nook-container"></div>`,
-                contributions: `<div class="contributions-page"><h2>Top Contributors</h2><ol class="leaderboard"></ol></div>`
-            };
+        <!-- Action Bar Section -->
+        <div class="mb-12 p-8 rounded-lg bg-white shadow-md text-center fade-in-up" style="animation-delay: 0.1s;">
+            <h2 class="text-3xl font-bold mb-4">Share something new</h2>
+            <p class="mb-6 max-w-xl mx-auto" style="color: var(--text-secondary);">What masterpiece are you bringing to the gallery today?</p>
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <div class="relative w-full sm:w-1/2 lg:w-1/3">
+                    <input id="search-bar" type="text" placeholder="Search the gallery..." class="w-full py-3 px-4 rounded-full border focus:outline-none focus:ring-2 transition" style="border-color: var(--border-color); background-color: var(--bg-main); color: var(--text-main); --tw-ring-color: var(--primary-accent);">
+                    <i class="fa-solid fa-search absolute right-5 top-3.5" style="color: var(--text-secondary);"></i>
+                </div>
+                <button id="start-upload-btn" class="btn-cozy w-full sm:w-auto">
+                    <i class="fa-solid fa-plus mr-2"></i> Start Upload
+                </button>
+            </div>
+            <p id="upload-prompt" class="text-sm mt-3 hidden" style="color: var(--text-secondary);">Please log in to upload your art.</p>
+        </div>
+        
+        <!-- Filters and Tag Cloud Section -->
+        <div class="mb-12 fade-in-up" style="animation-delay: 0.2s;">
+            <div id="category-filters" class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6">
+                 <!-- Category filters will be populated by JS -->
+            </div>
+             <div id="tag-cloud-container" class="text-center p-6 rounded-lg bg-white shadow-sm">
+                <h3 class="text-lg font-bold mb-4" style="font-family: 'Inter', sans-serif;">Trending Tags</h3>
+                <div id="tag-cloud" class="flex flex-wrap justify-center items-center gap-2">
+                    <!-- Tags will be populated by JS -->
+                </div>
+            </div>
+        </div>
 
-            // --- CORE FUNCTIONS ---
-            function loadData() {
-                posts = JSON.parse(localStorage.getItem('hearthAndVersePosts')) || [];
-                currentUser = localStorage.getItem('hearthAndVerseUser');
+
+        <!-- Gallery Grid -->
+        <main id="gallery-grid">
+            <!-- Placeholder cards will be injected by JS -->
+        </main>
+        
+        <!-- Empty State Message -->
+        <div id="empty-state" class="text-center py-20 hidden">
+             <h2 class="text-3xl font-bold mb-4">The gallery is quiet...</h2>
+             <p class="text-lg" style="color: var(--text-secondary);">Why not be the first to share something beautiful?</p>
+        </div>
+
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div id="upload-modal-content" class="modal-content rounded-lg p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto" style="background-color: var(--bg-main);">
+            <h2 class="text-3xl font-bold mb-6 text-center">Share Your Creation</h2>
+            <form id="upload-form">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label for="title" class="block font-bold mb-2">Title *</label>
+                        <input type="text" id="title" class="w-full p-2 px-4 rounded-full border" style="border-color: var(--border-color); background-color: var(--bg-secondary);" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="category" class="block font-bold mb-2">Category *</label>
+                        <select id="category" class="w-full p-2 px-4 rounded-full border appearance-none" style="border-color: var(--border-color); background-color: var(--bg-secondary);" required>
+                            <option value="Visual Art">Visual Art</option>
+                            <option value="Photography">Photography</option>
+                            <option value="Musical Score">Musical Score</option>
+                            <option value="Written Word">Written Word</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="tags" class="block font-bold mb-2">Tags (comma separated)</label>
+                    <input type="text" id="tags" placeholder="e.g. oil painting, abstract, nature" class="w-full p-2 px-4 rounded-full border" style="border-color: var(--border-color); background-color: var(--bg-secondary);">
+                </div>
+
+                <div id="file-upload-section" class="mb-4">
+                    <label for="artwork-file" class="block font-bold mb-2">Upload File (Image or PDF)</label>
+                    <input type="file" id="artwork-file" accept="image/*,application/pdf" class="w-full text-sm p-2 rounded-full border file:rounded-full file:border-0 file:bg-gray-100 file:mr-4 file:py-2 file:px-4 file:text-sm file:font-semibold" style="border-color: var(--border-color); background-color: var(--bg-secondary);">
+                </div>
                 
-                if (posts.length === 0) {
-                    posts = [
-                         { id: 0, type: 'poetry', title: "A Welcome to the Hearth", author: "Hearth & Verse", content: "The world outside may whisper low,<br>The autumn air is deep.<br>Come to the fire's gentle glow,<br>A quiet space to keep.<br><br>Let colors spill from brush and hand,<br>Let melodies take flight,<br>Let verses bloom across the land<br>And fill this space with light.<br><br>Your quiet thoughts, your inner art,<br>The stories you hold true,<br>Find shelter here, a place apart,<br>A home for all you do.<br><br>So stay a while and rest your soul,<br>And let your worries cease.<br>Your story helps to make us whole,<br>Now share your inner piece.", media: null, isMature: false },
-                    ];
-                    savePosts();
-                }
+                 <div id="write-section" class="mb-4 hidden">
+                    <label class="block font-bold mb-2">Write your piece here</label>
+                    <div class="rich-text-editor">
+                        <div class="editor-toolbar">
+                            <button type="button" class="toolbar-btn" data-command="bold"><i class="fas fa-bold"></i></button>
+                            <button type="button" class="toolbar-btn" data-command="italic"><i class="fas fa-italic"></i></button>
+                            <button type="button" class="toolbar-btn" data-command="underline"><i class="fas fa-underline"></i></button>
+                            <button type="button" class="toolbar-btn" data-command="strikeThrough"><i class="fas fa-strikethrough"></i></button>
+                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H2">H2</button>
+                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H3">H3</button>
+                            <button type="button" class="toolbar-btn" data-command="insertUnorderedList"><i class="fas fa-list-ul"></i></button>
+                            <button type="button" class="toolbar-btn" data-command="insertOrderedList"><i class="fas fa-list-ol"></i></button>
+                        </div>
+                        <div id="editor-content" contenteditable="true"></div>
+                    </div>
+                </div>
+
+                <div class="mt-6 mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="is-mature" class="h-5 w-5 rounded mr-3" style="accent-color: var(--primary-accent);">
+                        <span>This work is intended for a mature audience.</span>
+                    </label>
+                </div>
+
+                <div id="upload-error" class="text-red-500 text-center mb-4"></div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancel-upload" class="px-6 py-2 rounded-full text-gray-700 bg-gray-200 hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" id="submit-upload" class="btn-cozy">Publish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Artwork Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+         <div id="detail-modal-content" class="modal-content relative bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col" style="background-color: var(--bg-secondary);">
+             <button id="close-detail-modal" class="absolute -top-4 -right-4 bg-white rounded-full p-2 shadow-lg z-10 hover:scale-110 transition">
+                 <svg class="w-6 h-6" style="color: var(--text-main);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+             </button>
+             <div id="detail-content-area" class="overflow-y-auto p-8">
+                 <!-- Detailed content will be populated here -->
+             </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="modal-content rounded-lg p-8 w-full max-w-sm" style="background-color: var(--bg-main);">
+            <h2 class="text-3xl font-bold mb-6 text-center">Login</h2>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="login-email" class="block font-bold mb-2">Email</label>
+                    <input type="email" id="login-email" class="w-full p-2 px-4 rounded-full border" style="border-color: var(--border-color); background-color: var(--bg-secondary);" required>
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block font-bold mb-2">Password</label>
+                    <input type="password" id="login-password" class="w-full p-2 px-4 rounded-full border" style="border-color: var(--border-color); background-color: var(--bg-secondary);" required>
+                </div>
+                <div id="login-error" class="text-red-500 text-center mb-4 text-sm"></div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" class="btn-cancel px-6 py-2 rounded-full text-gray-700 bg-gray-200 hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="btn-cozy">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Sign Up Modal -->
+    <div id="signup-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="modal-content rounded-lg p-8 w-full max-w-sm" style="background-color: var(--bg-main);">
+            <h2 class="text-3xl font-bold mb-6 text-center">Create Account</h2>
+            <form id="signup-form">
+                <div class="mb-4">
+                    <label for="signup-email" class="block font-bold mb-2">Email</label>
+                    <input type="email" id="signup-email" class="w-full p-2 px-4 rounded-full border" style="border-color: var(--border-color); background-color: var(--bg-secondary);" required>
+                </div>
+                <div class="mb-6">
+                    <label for="signup-password" class="block font-bold mb-2">Password</label>
+                    <input type="password" id="signup-password" class="w-full p-2 px-4 rounded-full border" style="border-color: var(--border-color); background-color: var(--bg-secondary);" required>
+                </div>
+                <div id="signup-error" class="text-red-500 text-center mb-4 text-sm"></div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" class="btn-cancel px-6 py-2 rounded-full text-gray-700 bg-gray-200 hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="btn-cozy">Sign Up</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- YOUR FIREBASE CONFIG IS NOW INTEGRATED ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxCwNySAef9ywfma-7yU16kECg8hhz41Y",
+            authDomain: "hearth-1fe4c.firebaseapp.com",
+            projectId: "hearth-1fe4c",
+            storageBucket: "hearth-1fe4c.appspot.com",
+            messagingSenderId: "97496518913",
+            appId: "1:97496518913:web:84a4ec3d3ad6db22f70b00",
+            measurementId: "G-LNMCJCRG8W"
+        };
+        // --- END OF FIREBASE CONFIG ---
+        
+        const appId = 'hearth-gallery-shared';
+
+        // --- Firebase Initialization ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // --- Global State ---
+        let allArtworks = [];
+        let currentFilter = { category: 'All', tag: null, search: '' };
+        let currentUser = null;
+        const examplePoems = [
+            {
+                id: 'ex1', title: 'A Light Exists in Spring', category: 'Written Word', tags: ['nature', 'classic', 'poetry'],
+                textContent: `A Light exists in Spring<br>Not present on the Year<br>At any other period —<br>When March is scarcely here...<br><br>- Emily Dickinson`,
+                isMature: false, userId: 'System'
+            },
+            {
+                id: 'ex2', title: 'The Road Not Taken', category: 'Written Word', tags: ['life', 'choice', 'poetry'],
+                textContent: `Two roads diverged in a yellow wood,<br>And sorry I could not travel both<br>And be one traveler, long I stood<br>And looked down one as far as I could<br>To where it bent in the undergrowth...<br><br>- Robert Frost`,
+                isMature: false, userId: 'System'
             }
+        ];
 
-            function savePosts() { localStorage.setItem('hearthAndVersePosts', JSON.stringify(posts)); }
-            function saveUser(username) {
-                currentUser = username;
-                localStorage.setItem('hearthAndVerseUser', username);
+        // --- UI Elements ---
+        const galleryGrid = document.getElementById('gallery-grid');
+        const emptyState = document.getElementById('empty-state');
+        const searchBar = document.getElementById('search-bar');
+        const startUploadBtn = document.getElementById('start-upload-btn');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        
+        // Auth UI
+        const loggedInView = document.getElementById('logged-in-view');
+        const loggedOutView = document.getElementById('logged-out-view');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginModal = document.getElementById('login-modal');
+        const signupModal = document.getElementById('signup-modal');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+
+        // Upload Modal UI
+        const uploadModal = document.getElementById('upload-modal');
+        const uploadForm = document.getElementById('upload-form');
+        const categorySelect = document.getElementById('category');
+        const editorContent = document.getElementById('editor-content');
+        const cancelUploadBtn = document.getElementById('cancel-upload');
+
+        // Detail Modal UI
+        const detailModal = document.getElementById('detail-modal');
+        const detailModalContent = document.getElementById('detail-modal-content');
+        const closeDetailModalBtn = document.getElementById('close-detail-modal');
+        
+        function showPlaceholders() {
+            galleryGrid.innerHTML = Array(8).fill('').map(() => `
+                <div class="gallery-item">
+                    <div class="placeholder-card w-full h-64 rounded-lg"></div>
+                </div>
+            `).join('');
+        }
+
+        // --- AUTH SYSTEM (FIREBASE) ---
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                updateUIAfterLogin();
+            } else {
+                currentUser = null;
+                updateUIAfterLogout();
             }
-
-            // --- UI FUNCTIONS ---
-            function createPreview(post) {
-                if (post.type === 'art') return post.content ? createTextPreview(post.content) : 'An artwork.';
-                if (post.type === 'music') return post.content ? createTextPreview(post.content) : 'A musical piece.';
-                return createTextPreview(post.content);
-            }
-
-            function createTextPreview(htmlContent) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = htmlContent.replace(/<br\s*[\/]?>/gi, " ");
-                const text = tempDiv.textContent || tempDiv.innerText || "";
-                return text.split(' ').slice(0, 20).join(' ') + '...';
-            }
-            
-            function createPostCard(post, options = {}) {
-                const { showDeleteButton = false } = options;
-                const card = document.createElement('article');
-                card.className = 'poem-card';
-                card.dataset.postId = post.id;
-                
-                const matureLabel = post.isMature ? `<span class="mature-label">18+</span>` : '';
-                const categoryLabel = `<span class="category-label ${post.type}">${post.type}</span>`;
-                const deleteButton = showDeleteButton ? `<div class="card-actions"><button class="delete-btn" data-id="${post.id}"><i class="fas fa-trash"></i> Delete</button></div>` : '';
-
-                card.innerHTML = `<div class="poem-card-content" data-post-id="${post.id}"><div class="card-header"><h2>${post.title}</h2><div class="label-container">${categoryLabel}${matureLabel}</div></div><h3 class="author">By ${post.author}</h3><p>${createPreview(post)}</p></div>${deleteButton}`;
-                return card;
-            }
-
-            function renderPosts(postList, container, options = {}) {
-                if (!container) return;
-                container.innerHTML = '';
-                if (postList.length === 0) {
-                     container.innerHTML = `<p class="no-results">${options.emptyMessage || 'No creations found.'}</p>`;
-                     return;
-                }
-                postList.forEach(post => {
-                    container.appendChild(createPostCard(post, options));
-                });
-            }
-            
-            let pendingPage = null;
-
-            function showPage(pageId) {
-                if ((pageId === 'myposts' || pageId === 'write') && !currentUser) {
-                    document.getElementById('author-modal').classList.add('visible');
-                    pendingPage = pageId; // Remember which page user wanted to go to
-                    return;
-                }
-
-                document.querySelectorAll('.page').forEach(p => {
-                    p.innerHTML = ''; // Clear content
-                    p.classList.remove('active');
-                });
-
-                const pageContainer = document.getElementById(pageId);
-                if (pageContainer) {
-                    pageContainer.innerHTML = TEMPLATES[pageId];
-                    pageContainer.classList.add('active');
-                    navLinks.forEach(link => link.classList.toggle('active', link.dataset.page === pageId));
-                    window.scrollTo(0, 0);
-                    initializePage(pageId);
-                }
-            }
-
-            function initializePage(pageId) {
-                if (pageId === 'library') renderPosts(posts, document.querySelector('.library'));
-                if (pageId === 'myposts') renderMyPosts();
-                if (pageId === 'search') {
-                    document.getElementById('search-input').addEventListener('input', handleSearch);
-                    handleSearch(); // Render all posts initially
-                }
-                if (pageId === 'contributions') renderLeaderboard();
-                if (pageId === 'write') initializeWritePage();
-            }
-
-            function openPost(postId) {
-                const post = posts.find(p => p.id == postId);
-                if (!post) return;
-                
-                let mediaHTML = '';
-                if(post.type === 'art') {
-                    mediaHTML = `<img src="${post.media.url}" alt="${post.title}">`;
-                } else if(post.type === 'music') {
-                     if (post.media.type === 'link') {
-                        mediaHTML = `<div class="music-link-container"><a href="${post.media.url}" target="_blank" rel="noopener noreferrer" class="music-link">View Sheet Music</a></div>`;
-                     } else if (post.media.type === 'pdf') {
-                        let pdfLinks = post.media.files.map(file => 
-                            `<div class="pdf-item"><span>${file.name}</span><div class="pdf-item-actions"><a href="${file.data}" target="_blank" rel="noopener noreferrer">View</a><a href="${file.data}" download="${file.name}">Download</a></div></div>`
-                        ).join('');
-                        mediaHTML = `<div class="pdf-list-container">${pdfLinks}</div>`;
-                     }
-                }
-
-                const matureLabel = post.isMature ? `<span class="mature-label">18+</span>` : '';
-                const categoryLabel = `<span class="category-label ${post.type}">${post.type}</span>`;
-                const descriptionHTML = post.content ? `<div class="post-description">${post.content}</div>` : '';
-
-                showPage('reading-nook');
-                const container = document.querySelector('.reading-nook-container');
-                container.innerHTML = `<a href="#" class="back-button" data-page="library">&larr; Back to Library</a><div class="card-header"><h2>${post.title}</h2><div class="label-container">${categoryLabel}${matureLabel}</div></div><h3>By ${post.author}</h3><div class="post-content">${mediaHTML}${descriptionHTML}</div>`;
-            }
-
-            // --- PAGE-SPECIFIC RENDER FUNCTIONS ---
-            function renderMyPosts() {
-                const myPosts = posts.filter(p => p.author === currentUser);
-                renderPosts(myPosts, document.getElementById('my-posts-results'), { showDeleteButton: true, emptyMessage: "You haven't published any creations yet." });
-            }
-            function handleSearch() {
-                const searchInput = document.getElementById('search-input');
-                if (!searchInput) return;
-                const query = searchInput.value.toLowerCase().trim();
-                const filteredPosts = posts.filter(post => {
-                    const textContent = (new DOMParser().parseFromString(post.content, "text/html")).documentElement.textContent;
-                    return post.title.toLowerCase().includes(query) || post.author.toLowerCase().includes(query) || textContent.toLowerCase().includes(query) || post.type.toLowerCase().includes(query);
-                });
-                renderPosts(filteredPosts, document.getElementById('search-results'));
-            }
-            function renderLeaderboard() {
-                const contributions = posts.reduce((acc, post) => {
-                    acc[post.author] = (acc[post.author] || 0) + 1;
-                    return acc;
-                }, {});
-
-                const sortedContributors = Object.entries(contributions).sort((a, b) => b[1] - a[1]);
-
-                const leaderboardList = document.querySelector('.leaderboard');
-                leaderboardList.innerHTML = sortedContributors.map(([author, count], index) => `
-                    <li>
-                        <span class="rank">#${index + 1}</span>
-                        <span class="author-name">${author}</span>
-                        <span class="post-count">${count} post${count > 1 ? 's' : ''}</span>
-                    </li>
-                `).join('');
-            }
-            
-            // --- EVENT LISTENERS ---
-            document.querySelector('.navigation').addEventListener('click', e => {
-                if (e.target.matches('.nav-link, .nav-link *')) {
-                    const link = e.target.closest('.nav-link');
-                    e.preventDefault();
-                    showPage(link.dataset.page);
-                }
-            });
-
-            document.getElementById('home-link').addEventListener('click', () => showPage('library'));
-            
-            document.body.addEventListener('click', function(e) {
-                if (e.target.matches('.auth-switch a')) {
-                    e.preventDefault();
-                    showPage(e.target.dataset.page);
-                }
-                const cardContent = e.target.closest('.poem-card-content');
-                if (cardContent) openPost(cardContent.dataset.postId);
-                const backButton = e.target.closest('.back-button');
-                if (backButton) { e.preventDefault(); showPage(backButton.dataset.page); }
-                const deleteButton = e.target.closest('.delete-btn');
-                if(deleteButton) {
-                    if (confirm("Are you sure you want to permanently delete this creation?")) {
-                        posts = posts.filter(p => p.id !== parseInt(deleteButton.dataset.id, 10));
-                        savePosts();
-                        renderMyPosts();
-                    }
-                }
-            });
-            
-            document.getElementById('save-author-btn').addEventListener('click', () => {
-                const authorNameInput = document.getElementById('author-name-input');
-                const name = authorNameInput.value.trim();
-                if (name) {
-                    saveUser(name);
-                    document.getElementById('author-modal').classList.remove('visible');
-                    if (pendingPage) {
-                        showPage(pendingPage);
-                        pendingPage = null;
-                    }
-                } else {
-                    alert('Please enter a name.');
-                }
-            });
-
-            // --- WRITE PAGE LOGIC ---
-            function initializeWritePage() {
-                const authorInput = document.getElementById('post-author-input');
-                if (currentUser) {
-                    authorInput.value = currentUser;
-                    authorInput.readOnly = true;
-                } else {
-                    // This case should not be reached due to page guard, but as a fallback:
-                    authorInput.readOnly = false;
-                }
-
-                document.querySelectorAll('input[name="category"]').forEach(radio => {
-                    radio.addEventListener('change', () => {
-                        const selectedCategory = document.querySelector('input[name="category"]:checked').value;
-                        document.querySelectorAll('.writer-field').forEach(field => {
-                            field.classList.toggle('active', field.id.includes(selectedCategory));
-                        });
-                    });
-                });
-                
-                const artUploadDevice = document.getElementById('art-upload-device');
-                function handleArtFile(file) {
-                    if(file) {
-                        const reader = new FileReader();
-                        reader.onload = e => {
-                            uploadedArtData = e.target.result;
-                            const artPreview = document.getElementById('art-upload-preview');
-                            artPreview.src = uploadedArtData;
-                            artPreview.style.display = 'block';
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                }
-                artUploadDevice.addEventListener('change', e => handleArtFile(e.target.files[0]));
-                // document.getElementById('art-camera-button').addEventListener('click', startCamera);
-                
-                document.getElementById('music-pdf-upload').addEventListener('change', e => {
-                    const files = e.target.files;
-                    if (files.length > 10) { alert("Max 10 files."); e.target.value = ''; return; }
-                    uploadedMusicPDFs = [];
-                    const fileListEl = document.getElementById('pdf-file-list');
-                    fileListEl.innerHTML = '';
-                    Array.from(files).forEach(file => {
-                        const reader = new FileReader();
-                        reader.onload = re => {
-                            uploadedMusicPDFs.push({ name: file.name, data: re.target.result });
-                            fileListEl.innerHTML += `<div>${file.name}</div>`;
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                });
-                
-                const editor = document.getElementById('poem-editor');
-                document.querySelector('.writing-toolbar').addEventListener('click', e => {
-                    const button = e.target.closest('.tool-btn');
-                    if (button && button.dataset.command) { document.execCommand(button.dataset.command, false, null); editor.focus(); }
-                });
-                document.addEventListener('selectionchange', () => {
-                    if (document.activeElement === editor) {
-                        document.querySelectorAll('.writing-toolbar .tool-btn').forEach(b => b.classList.toggle('active', document.queryCommandState(b.dataset.command)));
-                    }
-                });
-                document.getElementById('color-picker').addEventListener('input', e => {
-                    document.execCommand('foreColor', false, e.target.value);
-                    e.target.closest('.color-picker-wrapper').style.setProperty('--selected-color', e.target.value);
-                    editor.focus();
-                });
-
-                document.getElementById('publish-btn').addEventListener('click', () => {
-                    const title = document.getElementById('post-title-input').value.trim();
-                    const author = authorInput.value.trim();
-                    const description = editor.innerHTML.trim();
-                    const textContent = editor.innerText.trim();
-                    const type = document.querySelector('input[name="category"]:checked').value;
-                    if (!title || !author) { alert("Please provide a title and your name."); return; }
-                    
-                    if (!currentUser) {
-                        saveUser(author);
-                    }
-
-                    const newPost = { id: Date.now(), title, author, type, content: description, media: null, isMature: false }; // Simplified for now
-
-                    if (type === 'art') {
-                        if (!uploadedArtData) { alert("Please select an image file."); return; }
-                        newPost.media = { type: 'image', url: uploadedArtData };
-                    } else if (type === 'music') {
-                        const musicLink = document.getElementById('music-link-input').value.trim();
-                        if (!musicLink && uploadedMusicPDFs.length === 0) { alert("Please provide a link or upload PDFs."); return; }
-                        newPost.media = musicLink ? { type: 'link', url: musicLink } : { type: 'pdf', files: uploadedMusicPDFs };
-                    } else if (description === '' || description === '<br>') {
-                        alert("Please write your poem."); return;
-                    }
-                    
-                    posts.push(newPost);
-                    savePosts();
-                    showPage('library');
-                });
-            }
-
-            // --- INITIALIZATION ---
-            loadData();
-            showPage('library');
-            navLinks.forEach(l => l.classList.add('visible'));
-
         });
-    </script>
 
+        function updateUIAfterLogin() {
+            loggedInView.classList.remove('hidden');
+            loggedOutView.classList.add('hidden');
+            welcomeMessage.textContent = `Welcome, ${currentUser.email}!`;
+            startUploadBtn.disabled = false;
+            uploadPrompt.classList.add('hidden');
+        }
+
+        function updateUIAfterLogout() {
+            loggedInView.classList.add('hidden');
+            loggedOutView.classList.remove('hidden');
+            startUploadBtn.disabled = true;
+            uploadPrompt.classList.remove('hidden');
+        }
+
+        async function handleSignUp(e) {
+            e.preventDefault();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const errorEl = document.getElementById('signup-error');
+            errorEl.textContent = '';
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                closeModal(signupModal);
+            } catch (error) {
+                console.error("Firebase SignUp Error:", error.message);
+                errorEl.textContent = error.message;
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+            errorEl.textContent = '';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                closeModal(loginModal);
+            } catch (error) {
+                console.error("Firebase Login Error:", error.message);
+                errorEl.textContent = error.message;
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Firebase Logout Error:", error.message);
+            }
+        }
+
+        // --- Art Rendering ---
+        function renderArtworks() {
+            let artworksToDisplay = [...allArtworks];
+
+            artworksToDisplay.sort((a, b) => {
+                const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+                const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+                if (a.userId === 'System') return 1;
+                if (b.userId === 'System') return -1;
+                return dateB - dateA;
+            });
+            
+            let filteredArtworks = artworksToDisplay.filter(art => {
+                const searchLower = currentFilter.search.toLowerCase();
+                const titleMatch = art.title.toLowerCase().includes(searchLower);
+                const tagMatch = art.tags.some(tag => tag.toLowerCase().includes(searchLower));
+                const categoryMatch = art.category.toLowerCase().includes(searchLower);
+                
+                const categoryFilterMatch = currentFilter.category === 'All' || art.category === currentFilter.category;
+                const tagFilterMatch = !currentFilter.tag || art.tags.includes(currentFilter.tag);
+                
+                return (titleMatch || tagMatch || categoryMatch) && categoryFilterMatch && tagFilterMatch;
+            });
+
+            galleryGrid.innerHTML = '';
+            const userArtworksExist = filteredArtworks.some(art => art.userId !== 'System');
+            emptyState.classList.toggle('hidden', userArtworksExist || filteredArtworks.length > 0);
+            
+            filteredArtworks.forEach((art, index) => {
+                const card = document.createElement('div');
+                card.className = 'gallery-item gallery-card fade-in-up';
+                card.style.animationDelay = `${index * 50}ms`;
+
+                let mediaContent = '';
+                const isPdf = art.imageUrl && art.imageUrl.includes('.pdf');
+
+                if (art.isMature) {
+                    mediaContent = `<div class="w-full h-48 bg-gray-200 flex flex-col items-center justify-center p-4 text-center"><p class="font-bold">Mature Content</p><p class="text-sm">Click to view</p></div>`;
+                } else if (isPdf) {
+                     mediaContent = `<div class="w-full h-48 bg-gray-100 flex flex-col items-center justify-center p-4 text-center"><i class="fas fa-file-pdf text-4xl mb-2" style="color: var(--text-secondary);"></i><p class="font-semibold">Music Score</p></div>`;
+                } else if (art.imageUrl) {
+                    mediaContent = `<img src="${art.imageUrl}" alt="${art.title}" class="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105">`;
+                }
+
+                const textPreview = !art.imageUrl && !art.isMature 
+                    ? `<div class="prose prose-sm max-h-24 overflow-hidden mb-3" style="color: var(--text-secondary);">${art.textContent}</div>` 
+                    : '';
+
+                card.innerHTML = `
+                    <div class="cursor-pointer group">
+                        ${mediaContent ? `<div class="overflow-hidden">${mediaContent}</div>` : ''}
+                        <div class="p-4">
+                            <p class="font-bold text-md mb-1 truncate">${art.title}</p>
+                            ${textPreview}
+                            <p class="text-sm mb-2 capitalize" style="color: var(--text-secondary);">${art.category}</p>
+                            <div class="flex flex-wrap gap-1 text-xs">
+                                ${art.tags.slice(0, 3).map(tag => `<span class="bg-gray-100 px-2 py-0.5 rounded-full" style="color: var(--text-secondary);">#${tag}</span>`).join('')}
+                                ${art.tags.length > 3 ? `<span class="bg-gray-100 px-2 py-0.5 rounded-full" style="color: var(--text-secondary);">+${art.tags.length - 3}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => openDetailModal(art));
+                galleryGrid.appendChild(card);
+            });
+            
+            updateFiltersAndTags();
+        }
+        
+        function updateFiltersAndTags() {
+            const allTags = allArtworks.flatMap(art => art.tags);
+            const tagCounts = allTags.reduce((acc, tag) => {
+                acc[tag] = (acc[tag] || 0) + 1;
+                return acc;
+            }, {});
+
+            const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            
+            const tagCloud = document.getElementById('tag-cloud');
+            tagCloud.innerHTML = sortedTags.map(([tag, count]) => 
+                `<button class="tag-btn px-3 py-1 rounded-full text-sm transition ${currentFilter.tag === tag ? 'bg-orange-200 font-bold' : 'bg-gray-100 hover:bg-gray-200'}" data-tag="${tag}" style="color: var(--text-secondary);">#${tag}</button>`
+            ).join('');
+
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (currentFilter.tag === btn.dataset.tag) {
+                        currentFilter.tag = null;
+                    } else {
+                        currentFilter.tag = btn.dataset.tag;
+                    }
+                    renderArtworks();
+                });
+            });
+
+             const categoryFilters = document.getElementById('category-filters');
+             const categories = ['All', 'Visual Art', 'Photography', 'Musical Score', 'Written Word'];
+             categoryFilters.innerHTML = categories.map(cat => 
+                `<button class="category-btn px-4 py-2 rounded-full font-semibold transition ${currentFilter.category === cat ? 'bg-orange-500 text-white' : 'bg-white hover:bg-orange-100'}" data-category="${cat}">${cat}</button>`
+             ).join('');
+
+             document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentFilter.category = btn.dataset.category;
+                    renderArtworks();
+                });
+             });
+        }
+
+
+        // --- Listen for Artworks from Firebase ---
+        function listenForArtworks() {
+            const q = query(collection(db, `artifacts/${appId}/public/data/artworks`));
+            onSnapshot(q, (snapshot) => {
+                const firestoreArtworks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allArtworks = [...examplePoems, ...firestoreArtworks];
+                renderArtworks();
+            }, (error) => {
+                console.error("Error fetching artworks from Firebase: ", error);
+                allArtworks = [...examplePoems];
+                renderArtworks();
+            });
+        }
+        
+
+        // --- Modal Logic & Editor ---
+        function setupEditor() {
+            const toolbar = document.querySelector('.editor-toolbar');
+            toolbar.addEventListener('click', (e) => {
+                const button = e.target.closest('.toolbar-btn');
+                if (!button) return;
+                const { command, value } = button.dataset;
+                document.execCommand(command, false, value);
+                editorContent.focus();
+                updateToolbar();
+            });
+
+            editorContent.addEventListener('keyup', updateToolbar);
+            editorContent.addEventListener('mouseup', updateToolbar);
+        }
+
+        function updateToolbar() {
+            const buttons = document.querySelectorAll('.toolbar-btn');
+            buttons.forEach(button => {
+                const command = button.dataset.command;
+                if (document.queryCommandState(command)) {
+                    button.classList.add('is-active');
+                } else {
+                    button.classList.remove('is-active');
+                }
+            });
+        }
+
+        function toggleEditor(category) {
+            const writeSection = document.getElementById('write-section');
+            const fileSection = document.getElementById('file-upload-section');
+            if (category === 'Written Word') {
+                writeSection.classList.remove('hidden');
+                fileSection.classList.add('hidden');
+            } else {
+                writeSection.classList.add('hidden');
+                fileSection.classList.remove('hidden');
+            }
+        }
+        
+        categorySelect.addEventListener('change', () => toggleEditor(categorySelect.value));
+
+        function openModal(modal) {
+            modal.classList.remove('hidden');
+            modal.querySelector('.modal-content').classList.remove('modal-leave');
+            modal.querySelector('.modal-content').classList.add('modal-enter');
+        }
+
+        function closeModal(modal) {
+            modal.querySelector('.modal-content').classList.remove('modal-enter');
+            modal.querySelector('.modal-content').classList.add('modal-leave');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                const form = modal.querySelector('form');
+                if (form) form.reset();
+                const error = modal.querySelector('[id$="-error"]');
+                if (error) error.textContent = '';
+            }, 300);
+        }
+
+        function openUploadModal() {
+            if (!currentUser) {
+                openModal(loginModal);
+                return;
+            }
+            openModal(uploadModal);
+            toggleEditor(categorySelect.value);
+        }
+        
+        function closeUploadModal() {
+            closeModal(uploadModal)
+            editorContent.innerHTML = '';
+        }
+
+        function openDetailModal(art) {
+            let contentHTML = `
+                <div class="p-8 pb-0">
+                    <h2 class="text-4xl font-bold mb-2">${art.title}</h2>
+                    <p class="text-lg mb-4" style="color: var(--text-secondary);">${art.category} &bull; By ${art.userId === 'System' ? 'The Hearth Gallery' : art.userId}</p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        ${art.tags.map(tag => `<span class="bg-gray-200 px-2 py-1 rounded-full text-xs" style="color: var(--text-secondary);">#${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+            let mainContent = '';
+
+            if (art.isMature) {
+                mainContent = `<div class="w-full h-96 bg-gray-200 flex items-center justify-center text-center">
+                                    <div>
+                                        <h3 class="text-2xl font-bold">Mature Content</h3>
+                                        <button id="reveal-content-btn" class="mt-4 btn-cozy">Click to Reveal</button>
+                                    </div>
+                                </div>`;
+            } else if (art.imageUrl) {
+                 mainContent = `<div class="p-8 pt-0"><img src="${art.imageUrl}" alt="${art.title}" class="w-full h-auto max-h-[60vh] object-contain rounded-lg"></div>`;
+            } else {
+                 mainContent = `<div class="p-8 pt-0 prose max-w-none">${art.textContent}</div>`;
+            }
+            
+            document.getElementById('detail-content-area').innerHTML = contentHTML + mainContent;
+
+            if (art.isMature) {
+                const revealBtn = document.getElementById('reveal-content-btn');
+                revealBtn.addEventListener('click', () => {
+                    let revealedContent = '';
+                    if (art.imageUrl) {
+                        revealedContent = `<div class="p-8 pt-0"><img src="${art.imageUrl}" alt="${art.title}" class="w-full h-auto max-h-[60vh] object-contain rounded-lg"></div>`;
+                    } else {
+                        revealedContent = `<div class="p-8 pt-0 prose max-w-none">${art.textContent}</div>`;
+                    }
+                     revealBtn.parentElement.parentElement.outerHTML = revealedContent;
+                }, { once: true });
+            }
+
+            detailModal.classList.remove('hidden');
+            detailModalContent.classList.remove('modal-leave');
+            detailModalContent.classList.add('modal-enter');
+        }
+        
+        function closeDetailModal() {
+             closeModal(detailModal);
+        }
+
+        // --- Form Handling & AI Simulation ---
+        async function handleUpload(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-upload');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Publishing...';
+
+            const title = document.getElementById('title').value;
+            const category = document.getElementById('category').value;
+            const tagsInput = document.getElementById('tags').value;
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+            const isMatureByUser = document.getElementById('is-mature').checked;
+            const fileInput = document.getElementById('artwork-file');
+            const textContentHtml = editorContent.innerHTML;
+            const errorEl = document.getElementById('upload-error');
+
+            errorEl.textContent = '';
+            
+            let imageUrl = null;
+            let finalIsMature = isMatureByUser;
+
+            if (category !== 'Written Word' && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    errorEl.textContent = 'File size cannot exceed 5MB.';
+                    submitBtn.disabled = false; submitBtn.textContent = 'Publish'; return;
+                }
+                
+                if (!isMatureByUser && file.type.startsWith('image/')) {
+                    if (Math.random() < 0.1) {
+                        finalIsMature = true; console.log("AI Simulation: Flagged as mature.");
+                    }
+                }
+                imageUrl = URL.createObjectURL(file);
+
+            } else if (category === 'Written Word') {
+                if (editorContent.textContent.trim().length < 10) {
+                     errorEl.textContent = 'Written piece must be at least 10 characters long.';
+                     submitBtn.disabled = false; submitBtn.textContent = 'Publish'; return;
+                }
+            } else {
+                errorEl.textContent = 'Please select a file to upload.';
+                submitBtn.disabled = false; submitBtn.textContent = 'Publish'; return;
+            }
+
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/public/data/artworks`), {
+                    title,
+                    category,
+                    tags,
+                    imageUrl,
+                    textContent: textContentHtml,
+                    isMature: finalIsMature,
+                    createdAt: serverTimestamp(),
+                    userId: currentUser.email, // Use the user's email
+                });
+                closeUploadModal();
+            } catch (error) {
+                console.error("Error adding document to Firebase: ", error);
+                errorEl.textContent = 'Could not save artwork. Please try again.';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Publish';
+            }
+        }
+        
+        
+        // --- Event Listeners ---
+        startUploadBtn.addEventListener('click', openUploadModal);
+        cancelUploadBtn.addEventListener('click', closeUploadModal);
+        closeDetailModalBtn.addEventListener('click', closeDetailModal);
+        uploadModal.addEventListener('click', (e) => { if(e.target === uploadModal) closeUploadModal(); });
+        detailModal.addEventListener('click', (e) => { if(e.target === detailModal) closeDetailModal(); });
+        uploadForm.addEventListener('submit', handleUpload);
+        searchBar.addEventListener('input', (e) => {
+            currentFilter.search = e.target.value;
+            renderArtworks();
+        });
+        
+        // Auth event listeners
+        loginBtn.addEventListener('click', () => openModal(loginModal));
+        signupBtn.addEventListener('click', () => openModal(signupModal));
+        logoutBtn.addEventListener('click', handleLogout);
+        loginForm.addEventListener('submit', handleLogin);
+        signupForm.addEventListener('submit', handleSignUp);
+        document.querySelectorAll('.btn-cancel').forEach(btn => {
+            btn.addEventListener('click', () => closeModal(btn.closest('.fixed')));
+        });
+        loginModal.addEventListener('click', (e) => { if(e.target === loginModal) closeModal(loginModal); });
+        signupModal.addEventListener('click', (e) => { if(e.target === signupModal) closeModal(signupModal); });
+
+        
+        // --- App Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            showPlaceholders();
+            listenForArtworks();
+            setupEditor();
+        });
+
+    </script>
 </body>
 </html>
 
